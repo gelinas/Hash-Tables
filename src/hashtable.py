@@ -32,7 +32,10 @@ class HashTable:
 
         OPTIONAL STRETCH: Research and implement DJB2
         '''
-        pass
+        hash_djb2 = 5381
+        for c in key:
+            hash_djb2 = (hash_djb2 * 33) + ord(c)
+        return hash_djb2
 
 
     def _hash_mod(self, key):
@@ -40,6 +43,7 @@ class HashTable:
         Take an arbitrary key and return a valid integer index
         within the storage capacity of the hash table.
         '''
+        # return self._hash_djb2(key) % self.capacity
         return self._hash(key) % self.capacity
 
 
@@ -51,7 +55,64 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+
+
+        # FIRST PASS: does not overwrite keys but does insertions with singly linked list
+        # index = self._hash_mod(key)
+        # # if index in use, chain the LinkedPair to the last value in the chain
+        # if self.storage[index]:
+        #     # traverse list to tail
+        #     node = self.storage[index]
+        #     while node.next:
+        #         node = node.next
+        #     node.next = LinkedPair(key, value)
+        # else:
+        #     self.storage[index] = LinkedPair(key, value)
+
+        # SECOND PASS: need to check key and overwrite if matches
+        # psudeocode:
+        # check index. 
+        #   If there's a node, check key. 
+        #       If key matches, overwrite
+        #       else key does NOT match 
+        #           if there's a next, check key
+
+        # index = self._hash_mod(key)
+        # if self.storage[index]:
+        #     node = self.storage[index]
+        #     # check first item, overwrite if matches
+        #     if node.key == key:
+        #         node.value = value
+        #         return
+        #     # if first item doesn't match, check for a next with key and repeat
+        #     while node.next:
+        #         if node.next.key == key:
+        #             node.next.value = value
+        #             return
+        #         else:
+        #             node = node.next
+        #     # if no more node.next's, add new linked pair to end
+        #     node.next = LinkedPair(key, value)
+        #     return
+        # # else bucket is empty, add first node
+        # else:
+        #     self.storage[index] = LinkedPair(key, value)
+        #     return
+
+        # THIRD PASS: single while loop
+        index = self._hash_mod(key)
+        # if something in bucket, check keys and overwrite if matches. Otherwise add to end
+        if self.storage[index]:
+            node = self.storage[index]
+            while node.key:
+                if node.key == key:
+                    node.value = value
+                    return
+
+        # else bucket is empty, add first node
+        else:
+            self.storage[index] = LinkedPair(key, value)
+            return
 
 
 
@@ -63,7 +124,16 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        index = self._hash_mod(key)
+        if self.storage[index]:
+            # traverse list to tail
+            node = self.storage[index]
+            while node.next:
+                node = node.next
+            return node.value
+        else:
+            print("ERROR: key not found")
+
 
 
     def retrieve(self, key):
@@ -74,7 +144,15 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        index = self._hash_mod(key)
+        if self.storage[index]:
+            # traverse list to tail for matching key
+            node = self.storage[index]
+            while node.key != key:
+                node = node.next
+            return node.value
+        else:
+            return None
 
 
     def resize(self):
@@ -84,7 +162,20 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        old_storage = self.storage.copy()
+        self.capacity = self.capacity * 2
+        self.storage = [None] * self.capacity
+        # if there is an item at a given index in old_storage, copy to the new self.storage
+        for item in old_storage:
+            if item is not None:
+                # insert first item into new list
+                node = item
+                self.insert(node.key, node.value)
+                # check if there are chained items and insert them as well
+                while node.next:
+                    self.insert(node.next.key, node.next.value)
+                    node = node.next
+                    
 
 
 
