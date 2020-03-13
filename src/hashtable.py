@@ -103,11 +103,16 @@ class HashTable:
         index = self._hash_mod(key)
         # if something in bucket, check keys and overwrite if matches. Otherwise add to end
         if self.storage[index]:
+            if self.storage[index].key == key:
+                self.storage[index] = LinkedPair(key, value)
+                return
             node = self.storage[index]
-            while node.key:
+            while node.next is not None:
                 if node.key == key:
-                    node.value = value
-                    return
+                    node = LinkedPair(key, value)
+                    break
+                node = node.next
+            node.next = LinkedPair(key, value)
 
         # else bucket is empty, add first node
         else:
@@ -126,13 +131,23 @@ class HashTable:
         '''
         index = self._hash_mod(key)
         if self.storage[index]:
-            # traverse list to tail
+            if self.storage[index].key == key:
+                self.storage[index].value = None
+                return
             node = self.storage[index]
-            while node.next:
+            while node.next is not None:
+                if node.key == key:
+                    node.value = None
+                    break
                 node = node.next
-            return node.value
+            if node.key == key:
+                node.value = None
+            else:
+                print("Nothing with that key to remove")
+        # else bucket is empty, add first node
         else:
-            print("ERROR: key not found")
+            print("Nothing with that key to remove")
+            return
 
 
 
